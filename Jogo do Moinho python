@@ -1,0 +1,426 @@
+#manter nome dos argumentos curtos ou meter mais explicito? Perguntar remédios
+#O mesmo no que diz respeito ao usar de c/l nas assinaturas das funções
+#Para as estratégias da fase de colocação, podemos readaptar o código do 1º projeto?
+
+#fazer função que transforma uma posicao num inteiro representante da posicao
+
+#Voltar atras e acabar obter_posicoes_adjacentes
+#posicoes adjacentes, percorrer tuplos (x,y) que representam a deslocacao e ver se essa posicao esta no tabuleiro
+
+#return [p[0], p[1]] meter antes isto na cria_copia_posicao?
+
+#tabuleiro como: {'a1': ' ', 'b1': ' ', 'c1': ' ',    
+#    'a2': ' ', 'b2': ' ', 'c2': ' ',
+#    'a3': ' ', 'b3': ' ', 'c3': ' '}  ?
+
+#Ver como quero o tabuleiro_para_str. COmo tenho ou "hardcoded" com .format() e uma subfuncao para obter um tuplo com as pecas todas
+#Caso deixe como esta, apagar o peca_por_posicao
+
+
+
+
+def cria_posicao(c, l):
+    #cria_posicao: str × str -> posicao
+    '''Recebe duas cadeias de carateres correspondentes a coluna c
+    e a linha l de uma posicao e devolve a posicao correspondente'''
+    if (not type(c) is str or not c.isalpha() or not len(c) == 1) or\
+        (not type(l) is str or not l.isdigit() or not len(l) == 1 or\
+        (int(l) < 1 or int(l) > 3)):
+        raise ValueError('cria_posicao: argumentos invalidos')
+
+    return [c, l]
+
+
+def cria_copia_posicao(p):
+    #cria_copia_posicao: posicao -> posicao
+    '''Recebe uma posicao e devolve uma copia nova da posicao.'''
+
+    return p[::]
+
+
+def obter_pos_c(p):
+    #obter_pos_c: posicao -> str
+    '''Devolve a componente coluna c da posicao p'''
+    return p[0]
+
+
+def obter_pos_l(p):
+    #obter_pos_l: posicao -> str
+    '''Devolve a componente l da posicao p'''
+    return p[1]
+
+
+def eh_posicao(arg):
+    #eh_posicao: universal -> booleano
+    '''Devolve True caso o seu argumento seja um TAD posicao e
+    False caso contrario'''
+
+    return type(arg) == list and (type(arg[0]) is str and arg[0].isalpha() \
+        and len(arg[0]) == 1) and (type(arg[1]) is str and\
+        arg[1].isdigit() and len(arg[1]) == 1 and\
+        0 < int(arg[1]) < 4)
+
+
+def posicoes_iguais(p1, p2):
+    #posicoes_iguais: posicao × posicao -> booleano
+    '''Devolve True apenas se p1 e p2 sao posicoes e sao iguais.'''
+
+    return eh_posicao(p1) and eh_posicao(p2) and p1 == p2
+
+
+def posicao_para_str(p):
+    #posicao_para_str: posicao -> str
+    '''Devolve a cadeia de caracteres "cl" que representa o seu
+    argumento, sendo os valores c e l as componentes coluna e linha de p.'''
+
+    return p[0] + p[1]
+
+
+def posicao_para_inteiro(p):
+    #posicao_para_inteiro: posicao -> inteiro
+    '''Recebe uma posicao e devolve um inteiro correspondente de 1 a 9'''
+
+    posicao = 1 + (int(obter_pos_l(p)) - 1) * 3 #A sucessao 1 + (n_linha -1) * 3
+    for coluna in ('a','b','c'):           #da a primeira posicao de cada linha
+        if obter_pos_c(p) == coluna:
+            return posicao
+        posicao = posicao + 1
+
+
+def inteiro_para_posicao(num):
+    #inteiro_para_posicao: inteiro -> posicao
+    '''Recebe um inteiro e devolve a posicao correspondente'''
+    
+    for coluna in ('a','b','c'):
+        for linha in (1,2,3):
+            if posicao_para_inteiro(cria_posicao(coluna, str(linha))) == num:
+                return cria_posicao(coluna, str(linha))
+
+
+def obter_posicoes_adjacentes(p):
+    #obter_posicoes_adjacentes: posicao -> tuplo de posicoes
+    '''Devolve um tuplo com as posicoes adjacentes a posicao
+    p de acordo com a ordem de leitura do tabuleiro'''
+
+    posicao = posicao_para_inteiro(p)
+    adjacentes = []
+
+    if posicao in (1,3,5,7,9):
+        translacoes = ((-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1),
+                     (1,0), (1,1))
+
+    elif posicao in (2,4,6,8):
+        translacoes = ((-1,0), (0,-1), (0,1), (1,0))
+
+    for translacao in translacoes:
+        posicao_adjacente = posicao + 3 * translacao[0] + translacao[1]
+        if 1 <= posicao_adjacente <= 9 and posicao_adjacente != posicao:
+            adjacentes.append(inteiro_para_posicao(posicao_adjacente))
+        
+    return adjacentes
+
+
+#p1 = cria_posicao('a', '2')
+p2 = cria_posicao('b', '3')
+#print(p1)
+#print(p2)   #a3, a2, b2, c2, c3
+#print(posicoes_iguais(p1, p2))
+#print(posicao_para_str(p1))
+print(tuple(posicao_para_str(p) for p in obter_posicoes_adjacentes(p2)))
+#p1 = cria_posicao('a', '4')
+
+
+def cria_peca(s):
+    #cria_peca: str -> peca
+    '''Recebe uma cadeia de carateres correspondente ao identificador
+    de um dos dois jogadores ("X" ou "O") ou a uma peca livre (" ") e devolve a
+    peca correspondente'''
+
+    if s not in ('X', 'O', ' '):
+        raise ValueError("cria_peca: argumento invalido")
+
+    return list(s)
+
+
+def cria_copia_peca(j):
+    #cria_copia_peca: peca -> peca
+    '''Recebe uma peca e devolve uma copia nova da peca'''
+
+    return j[::]
+
+
+def eh_peca(arg):
+    #eh_peca: universal -> booleano
+    '''Devolve True caso o seu argumento seja um TAD peca e False
+    caso contrario.'''
+    return arg in (['X'], ['O'], [' '])
+
+
+def pecas_iguais(j1, j2):
+    #pecas_iguais: peca × peca -> booleano
+    '''Devolve True apenas se p1 e p2 sao pecas e sao iguais'''
+    return eh_peca(j1) and eh_peca(j2) and j1 == j2
+
+
+def peca_para_str(j):
+    #peca_para_str : peca -> str
+    '''Devolve a cadeia de caracteres que representa o jogador dono
+    da peca, isto e, "[X]", "[O]" ou "[ ]".'''
+    return j.__repr__()
+
+
+def peca_para_inteiro(j):
+    #peca_para_inteiro: peca -> N
+    '''Devolve um inteiro valor 1, -1 ou 0, dependendo se a peca e do
+    jogador "X", "O" ou livre, respetivamente'''
+    jogador = -1
+    for x in ('O', ' ', 'X'):
+        if pecas_iguais(j, cria_peca(x)):
+            return jogador
+        jogador = jogador + 1
+
+
+def inteiro_para_peca(num):
+    #inteiro_para_peca: inteiro -> peca
+    '''Recebe um numero inteiro e devolve a peca correspondente'''
+    if num == -1:
+        return 'O'
+    elif num == 0:
+        return ' '
+    elif num == 1:
+        return 'X'
+
+#j1 = cria_peca('X')
+#j2 = cria_peca('O')
+#print(pecas_iguais(j1, j2))
+#print(peca_para_str(j1))
+#print(peca_para_inteiro(cria_peca(' ')))
+#print(peca_para_inteiro(cria_peca('X')))
+#j1 = cria_peca('x')
+
+
+def cria_tabuleiro():
+    #cria_tabuleiro: {} -> tabuleiro
+    '''Devolve um tabuleiro de jogo do moinho de 3x3 sem posicoes
+    ocupadas por pecas de jogador'''
+    return [[0,0,0], [0,0,0], [0,0,0]]
+
+
+def cria_copia_tabuleiro(t):
+    #cria_copia_tabuleiro: tabuleiro -> tabuleiro
+    '''Recebe um tabuleiro e devolve uma copia nova do tabuleiro'''
+    return t[::]
+    """copia = {}
+    for chave in t:
+        copia[chave] = t[chave]
+    return copia"""
+
+
+def obter_peca(t, p):
+    #obter_peca: tabuleiro × posicao -> peca
+    '''Devolve a peca na posicao p do tabuleiro. Se a posicao nao
+    estiver ocupada, devolve uma peca livre'''
+    return t[p]
+
+
+def obter_vetor(t, s):
+    #obter_vetor : tabuleiro × str -> tuplo de pecas
+    '''Devolve todas as pecas da linha ou coluna especificada pelo
+    seu argumento'''
+
+
+    if s in (1,2,3):
+        return tuple(t[s - 1])
+
+    num_coluna = 1
+    for coluna in ('a','b','c'):
+        if coluna == s:
+            return num_coluna
+        num_coluna = num_coluna + 1
+
+    return (s[0][num_coluna - 1], s[1][num_coluna - 1], s[2][num_coluna - 1])
+
+
+def eh_posicao_livre(t, p):
+    #eh_posicao_livre: tabuleiro x posicao -> booleano
+    '''Devolve True apenas no caso da posicao p do tabuleiro
+    corresponder a uma posicao livre'''
+
+    posicoes = ()
+    for linha in t:
+        for entrada in linha:
+            posicoes = posicoes + (entrada,)
+    
+    return posicoes[p - 1] == 0
+
+
+def alterar_tabuleiro(t, j, p):
+    #alterar_tabuleiro: tabuleiro x peca x posicao -> tabuleiro
+    '''Modifica destrutivamente o tabuleiro t, removendo ou colocando,
+    uma peca j na posicao p, e devolve o proprio tabuleiro.'''
+ 
+    posicao_atual = 1
+    num_linha = 0
+    num_coluna = 0
+    for linha in t:
+
+        for entrada in linha:
+            if posicao_atual == posicao_para_inteiro(p):
+
+                t[num_linha][num_coluna] = peca_para_inteiro(j)
+            posicao_atual = posicao_atual + 1
+            num_coluna = num_coluna + 1
+        num_linha = num_linha + 1
+
+
+def coloca_peca(t, j, p):
+    #coloca_peca: tabuleiro × peca × posicao -> tabuleiro
+    '''Modifica destrutivamente o tabuleiro t, colocando a peca j
+    na posicao p, e devolve o proprio tabuleiro.'''
+
+    if eh_posicao_livre(t,p):
+        alterar_tabuleiro(t, j, p)
+    return t
+
+
+def remove_peca(t, p):
+    #remove_peca: tabuleiro x posicao -> tabuleiro
+    '''Modifica destrutivamente o tabuleiro t, removendo a peca
+    da posicao p, e devolve o proprio tabuleiro'''
+
+    alterar_tabuleiro(t, cria_peca(' '), p)
+    return t
+
+
+def move_peca(t, p1, p2):
+    #move_peca: tabuleiro × posicao × posicao -> tabuleiro
+    '''Modifica destrutivamente o tabuleiro t, movendo a peca, que se encontra
+    na posicao p1, para a posicao p2, e devolve o proprio tabuleiro'''
+
+    peca1 = obter_peca(t, p1)
+    peca2 = obter_peca(t, p2)
+    if eh_posicao_livre(t, p2):
+        remove_peca(t, peca1)
+        coloca_peca(t, peca1, peca2)
+    
+    return t
+
+
+def eh_tabuleiro(arg):
+    #eh_tabuleiro: universal -> booleano
+    '''Devolve True caso o seu argumento seja um TAD tabuleiro
+    e False caso contrario'''
+
+    if type(arg) != list or len(arg) != 3:
+        return False
+
+    for linha in arg:
+        if type(linha) != list or len(linha) != 3:
+            return False
+
+        for elem in linha:
+            if type(elem) != int or elem not in [-1,0,1]:
+                return False
+
+    posicoes = tuple(obter_vetor(arg, 1) + obter_vetor(arg, 2) + 
+    obter_vetor(arg,3))
+
+    return posicoes.count(1) <= 3 and posicoes.count(-1) <= 3 and \
+        not (ganhou(arg, 1) and ganhou(arg, -1))
+
+
+def tabuleiros_iguais(t1, t2):
+    #tabuleiros_iguais: tabuleiro × tabuleiro -> booleano
+    '''Devolve True apenas se t1 e t2 sao tabuleiros e sao
+    iguais '''
+
+    return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
+
+
+def peca_por_posicao(t):
+    #peca_por_posicao: tabuleiro -> tuplo
+    '''Recebe um tabuleiro e devolve um tuplo com as pecas,
+    ordenadas por posicao'''
+    pecas = ()
+    for linha in t:
+        for entrada in linha:
+            pecas = pecas + (inteiro_para_peca(entrada))
+    return pecas
+
+
+def tabuleiro_para_str(t):
+    #tabuleiro_para_str: tabuleiro -> str
+    '''Devolve a cadeia de caracteres que representa o tabuleiro'''
+    string = ' a b c\n1 '
+
+    num_linha = 2
+    intermedio = 1
+    for linha in t:
+        num_entrada_linha = 1
+
+        for entrada in linha:
+
+            string = string +  + peca_para_str(inteiro_para_peca(entrada)) + '-'
+            if num_entrada_linha == 3:
+                string += '\n'
+            num_entrada_linha += 1
+
+        if intermedio == 1:
+            string += '| \ | / |\n{} '.format(num_linha)
+        else:
+            string += '| / | \ |\n{} '.format(num_linha)
+        intermedio += 1
+        num_linha += 1
+
+    return string
+
+
+
+def ganhou_horizontal(tabuleiro, jogador):
+    #ganhou_horizontal: tabuleiro X jogador -> booleano
+    '''Recebe um tabuleiro e um jogador (1 se usa X, -1 se usa O), devolvendo 
+    True se tiver tres posicoes ocupadas numa mesma linha
+    '''
+    for linha in range(1,4):
+        vetor = obter_vetor(tabuleiro, linha)
+        if vetor.count(jogador) == 3:
+            return True
+    
+    return False
+
+
+def ganhou_vertical(tabuleiro, jogador):
+    #ganhou_vertical: tabuleiro X jogador -> booleano
+    '''Recebe um tabuleiro e um jogador (1 se usa X, -1 se usa O), devolvendo 
+    True se tiver tres posicoes ocupadas numa mesma coluna
+    '''
+    for coluna in ('a','b','c'):
+        vetor = obter_vetor(tabuleiro, coluna)
+        if vetor.count(jogador) == 3:
+            return True
+    
+    return False
+
+
+def ganhou(tabuleiro, jogador):
+    #ganhou: tabuleiro x jogador -> booleano
+    '''Recebe um tabuleiro e um jogador e devolve True, caso tenha ganho, e
+    False, caso contrario'''
+
+    return ganhou_horizontal(tabuleiro, 1) or ganhou_vertical(tabuleiro, 1)
+
+
+def jogador_ganhador(tabuleiro):
+    #jogador_ganhador: tabuleiro -> vencedor
+    '''Recebe um tabuleiro, e devolve um valor inteiro a indicar o jogador
+    que ganhou a partida no tabuleiro passado por argumento, sendo o valor 
+    igual a 1 se ganhou o jogador que joga com "X", -1 se ganhou o jogador 
+    que joga com "O", ou 0 se nao ganhou nenhum jogador.
+    '''
+
+    if ganhou(tabuleiro, 1):
+        return 1
+    elif ganhou(tabuleiro, -1):
+        return -1
+    else:
+        return 0
