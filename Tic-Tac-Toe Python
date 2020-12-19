@@ -1,0 +1,702 @@
+# 99229 Goncalo Palma Ribeiro Graca Nunes
+
+def eh_tabuleiro(matriz):
+    #eh_tabuleiro: matriz -> booleano
+    '''Esta funcao recebe um argumento, correspondente a um tabuleiro, 
+    e verifica a sua validade'''
+
+    if type(matriz) != tuple or len(matriz) != 3:
+        return False
+
+    for vetor in matriz:
+        if type(vetor) != tuple or len(vetor) != 3:
+            return False
+
+        for elem in vetor:
+            if type(elem) != int or elem not in [-1,0,1]:
+                return False
+
+    return True
+
+
+def eh_posicao(posicao):
+    #eh_posicao: posicao -> booleano
+    '''Se a posicao nao for um inteiro ou nao estiver no intervalo [0,9], 
+    devolve False'''
+    return (type(posicao) != int or posicao < 1 or posicao > 9)
+        
+
+
+def obter_coluna(matriz, coluna):
+    #obter_coluna: matriz X coluna -> tuplo_coluna
+    '''Recebe uma matriz e uma coluna, devolvendo um tuplo com os 
+    elementos dessa coluna'''
+
+    if not eh_tabuleiro(matriz) or (coluna not in [1,2,3] or 
+    type(coluna) != int):
+        raise ValueError("obter_coluna: algum dos argumentos e invalido")
+    return (matriz[0][coluna - 1], matriz[1][coluna - 1], matriz[2][coluna - 1])
+
+
+def obter_linha(matriz, linha):
+    #obter_linha: matriz X linha -> tuplo_linha
+    '''Recebe uma matriz e uma linha, devolvendo o tuplo com os 
+    elementos dessa linha'''
+
+    if not eh_tabuleiro(matriz) or (linha not in [1,2,3] or
+    type(linha) != int ):
+        raise ValueError("obter_linha: algum dos argumentos e invalido")
+    return matriz[linha - 1]
+
+
+def obter_diagonal(matriz, direcao):
+    #obter_diagonal: matriz X direcao -> tuplo_diagonal
+    '''Recebe uma matriz e uma direcao, sendo direcao = 1 descendente 
+    da esquerda para a direita e direcao = 2 ascendente da esquerda para a direita
+    '''
+
+    if not eh_tabuleiro(matriz) or (direcao not in [1,2] or
+    type(direcao) != int):
+        raise ValueError("obter_diagonal: algum dos argumentos e invalido")
+
+    diagonal = ()
+    coluna = 0
+    if direcao == 1:
+        for linha in matriz:
+            diagonal = diagonal + (linha[coluna],)
+            coluna = coluna + 1
+    else:
+        for linha in matriz[::-1]:
+            diagonal = diagonal + (linha[coluna],)
+            coluna = coluna + 1
+    return diagonal
+
+
+def tabuleiro_str(tabuleiro):
+    #tabuleiro_str: tabuleiro -> string
+    '''Recebe um tabuleiro, como argumento, e devolve uma string com a 
+    representacao externa do tabuleiro e das posicoes ocupadas'''
+
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("tabuleiro_str: o argumento e invalido")
+
+    string = ''
+    counter = 0
+    for linha in tabuleiro:
+        barra = 0
+
+        for posicao in linha:
+            if posicao == 1:
+                string = string + ' X '
+            elif posicao == -1:
+                string = string + ' O '
+            elif posicao == 0:
+                string = string + '   '
+            if barra != 2:
+                string = string + '|'
+            barra = barra + 1
+        if counter < 2:
+            string = string + '\n-----------\n'
+            counter = counter + 1
+    return string
+
+
+def eh_posicao_livre(tabuleiro, posicao):
+    #eh_posicao_livre: tabuleiro X posicao -> booleano
+    '''Recebe um tabuleiro e uma posicao, verifica a sua validade e devolve 
+    True se a posicao estiver livre e False caso contrario'''
+
+    if not eh_tabuleiro(tabuleiro) or not eh_posicao(posicao):
+        raise ValueError("eh_posicao_livre: algum dos argumentos e invalido")
+
+    posicoes = ()
+    for linha in tabuleiro:
+        for entrada in linha:
+            posicoes = posicoes + (entrada,)
+    
+    if posicoes[posicao - 1] == 0:
+        return True
+    return False
+
+
+def obter_posicoes_livres(tabuleiro):
+    #obter_posicoes_livres: tabuleiro -> tuplo_posicoes_livres
+    '''Recebe um tabuleiro e devolve um vetor ordenado com todas as 
+    posicoes livres'''
+
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("obter_posicoes_livres: o argumento e invalido")
+
+    posicoes_livres = ()
+    for posicao in range(1, 10):
+        if eh_posicao_livre(tabuleiro, posicao):
+            posicoes_livres = posicoes_livres + (posicao,)
+    return posicoes_livres
+
+
+def obter_adversario(jogador):
+    #obter_adversario: jogador -> adversario
+    '''Recebe um jogador e devolve o numero correspondente ao adversario'''
+    if jogador not in [-1,1] or type(jogador) != int:
+        raise ValueError("adversario: o argumento e invalido")
+    if jogador == 1:
+        return -1
+    if jogador == -1:
+        return 1
+
+
+def ganhou_horizontal(tabuleiro, jogador):
+    #ganhou_horizontal: tabuleiro X jogador -> booleano
+    '''Recebe um tabuleiro e um jogador (1 se usa X, -1 se usa O), devolvendo 
+    True se tiver tres posicoes ocupadas numa mesma linha
+    '''
+
+    for linha in tabuleiro:
+        consecutivo = 0
+        for entrada in linha:
+            if entrada == jogador:
+                consecutivo = consecutivo + 1
+        if consecutivo == 3:
+            return True
+    return False
+
+
+def ganhou_vertical(tabuleiro, jogador):
+    #ganhou_vertical: tabuleiro X jogador -> booleano
+    '''Recebe um tabuleiro e um jogador (1 se usa X, -1 se usa O), devolvendo 
+    True se tiver tres posicoes ocupadas numa mesma coluna
+    '''
+    for coluna in range(3):
+        consecutivo = 0
+        for linha in tabuleiro:
+            if linha[coluna] == jogador:
+                consecutivo = consecutivo + 1
+        if consecutivo == 3:
+            return True
+    return False
+
+
+def ganhou_diagonal(tabuleiro, jogador, direcao):
+    #ganhou_diagonal: tabuleiro X jogador X direcao -> booleano
+    '''Recebe um tabuleiro, um jogador (1 se usa X, -1 se usa O) e uma direcao 
+    de diagonal (1 para descendente da esquerda para a direita e -1 para a 
+    outra diagonal), devolvendo True se tiver tres posicoes ocupadas
+    numa mesma diagonal
+    '''
+    consecutivo = 0
+    if direcao == 1:
+        coluna = 0
+        for linha in tabuleiro:
+            if linha[coluna] == jogador:
+                consecutivo = consecutivo + 1
+            coluna = coluna + 1
+
+    else:
+        coluna = 2
+        for linha in tabuleiro:
+            if linha[coluna] == jogador:
+                consecutivo = consecutivo + 1
+            coluna = coluna - 1
+    
+    if consecutivo == 3:
+        return True
+    else:
+        return False
+
+
+def jogador_ganhador(tabuleiro):
+    #jogador_ganhador: tabuleiro -> vencedor
+    '''Recebe um tabuleiro, e devolve um valor inteiro a indicar o jogador
+    que ganhou a partida no tabuleiro passado por argumento, sendo o valor 
+    igual a 1 se ganhou o jogador que joga com "X", -1 se ganhou o jogador 
+    que joga com "O", ou 0 se nao ganhou nenhum jogador.
+    '''
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("jogador_ganhador: o argumento e invalido")
+
+    if ganhou_diagonal(tabuleiro, 1, 1) or ganhou_diagonal(tabuleiro, 1, -1) \
+    or ganhou_horizontal(tabuleiro, 1) or ganhou_vertical(tabuleiro, 1):
+
+        return 1
+
+    elif ganhou_diagonal(tabuleiro, -1, 1) or ganhou_diagonal(tabuleiro, -1, -1) \
+        or ganhou_horizontal(tabuleiro, -1) or ganhou_vertical(tabuleiro, -1):
+
+        return -1
+    else:
+        return 0
+
+
+def marcar_posicao(tabuleiro, jogador, posicao):
+    #marcar_posicao: tabuleiro X jogador X posicao -> novo_tabuleiro
+    ''' Recebe um tabuleiro, um inteiro identificando um jogador 
+    (1 para o jogador "X" ou -1 para o jogador "O") e uma posicao livre, 
+    e devolve um novo tabuleiro modificado com uma nova marca do jogador nessa posicao
+    '''
+    if not eh_tabuleiro(tabuleiro) or  \
+    (jogador not in [1,-1] or type(jogador) != int) \
+    or (type(posicao) != int or posicao < 1 or posicao > 9) \
+    or not eh_posicao_livre(tabuleiro, posicao):
+        raise ValueError("marcar_posicao: algum dos argumentos e invalido")
+
+    if posicao in [1,2,3]:
+        linha = 0
+    elif posicao in [4,5,6]:
+        linha = 1
+    else:
+        linha = 2
+
+    counter_posicao = 1
+    counter_linhas = 0
+    novo_tabuleiro = ()
+
+    for vetor in tabuleiro:
+        if counter_linhas == linha:
+            novo_vetor = ()
+
+            for entrada in vetor:
+                if counter_posicao == posicao:
+                    novo_vetor = novo_vetor + (jogador,)
+                else:
+                    novo_vetor = novo_vetor + (entrada,)
+                counter_posicao = counter_posicao + 1
+            novo_tabuleiro = novo_tabuleiro + (novo_vetor,)
+
+        else:
+            novo_tabuleiro = novo_tabuleiro + (vetor,)
+            counter_posicao = counter_posicao + 3
+        counter_linhas = counter_linhas + 1
+
+    return novo_tabuleiro
+
+
+def escolher_posicao_manual(tabuleiro):
+    #escolher_posicao_manual: tabuleiro -> posicao
+    '''Recebe um tabuleiro e realiza a leitura de uma posicao introduzida 
+    manualmente por um jogador e devolve esta posicao escolhida
+    '''
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("escolher_posicao_manual: o argumento e invalido")
+
+    posicao = int(input("Turno do jogador. Escolha uma posicao livre: "))
+    if (posicao < 1 or posicao > 9) or not eh_posicao_livre(tabuleiro, posicao):
+        raise ValueError("escolher_posicao_manual: a posicao introduzida e invalida")
+    
+    return posicao
+
+
+def ver_cantos_livres(tabuleiro):
+    #ver_cantos_livres: tabuleiro -> primeiro canto livre
+    '''Recebe um tabuleiro e verifica se existe algum canto livre, devolvendo
+    a posicao do primeiro canto livre
+    '''
+
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("ver_cantos: algum dos argumentos e invalido")
+
+
+    #for posicao in (1,3,7,9):
+    #    if eh_posicao_livre(tabuleiro, posicao):
+    #        return posicao
+
+    if eh_posicao_livre(tabuleiro, 1):
+        return 1
+    elif eh_posicao_livre(tabuleiro, 3):
+        return 3
+    elif eh_posicao_livre(tabuleiro, 7):
+        return 7
+    elif eh_posicao_livre(tabuleiro, 9):
+        return 9
+    else:
+        return False
+
+
+def ver_lateral_livre(tabuleiro):
+    #ver_lateral_livre: tabuleiro -> primeira lateral livre
+    '''Recebe um tabuleiro e verifica se ha uma lateral livre, devolvendo
+    a posicao da primeira que estiver livre
+    '''
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("marcar_lateral: algum dos argumentos e invalido")
+    
+    laterais = (2,4,6,8)
+    for entrada in laterais:
+        if eh_posicao_livre(tabuleiro, entrada):
+            return entrada
+    return False
+
+
+def basico(tabuleiro):
+    #basico: tabuleiro -> posicao
+    '''Recebe um tabuleiro e verifica se o centro, cantos e laterais, por essa
+    ordem, devolvendo a primeira livre
+    '''
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("basico: algum dos argumentos e invalido")
+    
+    if eh_posicao_livre(tabuleiro, 5):
+        return 5
+    elif ver_cantos_livres(tabuleiro):
+        return ver_cantos_livres(tabuleiro)
+    else:
+        return ver_lateral_livre(tabuleiro)
+
+
+def canto_oposto(tabuleiro, jogador):
+    #canto_oposto: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador, verificando se o adversario possui
+    um canto, devolvendo o primeiro canto oposto livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (jogador not in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("possui canto: algum dos argumentos e invalido")
+    
+    adversario = obter_adversario(jogador)
+    if tabuleiro[0][0] == adversario and eh_posicao_livre(tabuleiro, 9):
+        return 9
+    if tabuleiro[0][2] == adversario and eh_posicao_livre(tabuleiro, 7):
+        return 7
+    if tabuleiro[2][0] == adversario and eh_posicao_livre(tabuleiro, 3):
+        return 3
+    if tabuleiro[2][2] == adversario and eh_posicao_livre(tabuleiro, 1):
+        return 1
+    return False
+
+
+def obter_matriz_coluna(tabuleiro):
+    #obter_matriz_coluna: tabuleiro -> tuplo_matriz_colunas
+    '''Recebe um tabuleiro e devolve a matriz 3x3, em que cada vetor 
+    corresponde a uma coluna da matriz original
+    '''
+    if not eh_tabuleiro:
+        raise ValueError("obter_matriz_coluna: o argumento e invalido")
+
+    matriz_coluna = ()
+    for i in range(1,4):
+        matriz_coluna = matriz_coluna + (obter_coluna(tabuleiro, i),)
+    return matriz_coluna
+
+
+def vitoria_colunas(tabuleiro, jogador):
+    #vitoria_colunas: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador, verifica se tem duas posicoes ocupadas
+    numa coluna e, havendo uma terceira livre para vencer o jogo, devolve a 
+    posicao livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("vitoria colunas: algum dos argumentos e invalido")
+    
+    matriz = obter_matriz_coluna(tabuleiro)
+    counter = 1
+    for vetor in matriz:
+        if vetor.count(jogador) == 2 and vetor.count(0) == 1:
+            return counter + 3 * (vetor.index(0))
+        counter = counter + 1
+    return False
+
+
+def vitoria_linhas(tabuleiro, jogador):
+    #vitoria_linhas: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador, verifica se tem duas posicoes ocupadas
+    numa linha e, havendo uma terceira livre para vencer o jogo, devolve a 
+    posicao livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("vitoria linhas: algum dos argumentos e invalido")
+
+    posicao = 1
+    for linha in tabuleiro:
+        if linha.count(jogador) == 2 and linha.count(0) == 1:
+            return posicao + linha.index(0)
+        posicao = posicao + 3
+    return False
+
+
+def vitoria_diagonal(tabuleiro, jogador):
+    #vitoria_diagonal: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador, verifica se tem duas posicoes ocupadas
+    numa diagonal e, havendo uma terceira livre para vencer o jogo, devolve a 
+    posicao livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("vitoria diagonal: algum dos argumentos e invalido")
+
+    posicao = 1
+    diagonal = obter_diagonal(tabuleiro, 1)
+    if diagonal.count(jogador) == 2 and diagonal.count(0) == 1:
+        return posicao + 4 * diagonal.index(0)
+
+    posicao = 7
+    diagonal = obter_diagonal(tabuleiro, 2)
+    if diagonal.count(jogador) == 2 and diagonal.count(0) == 1:
+        return posicao - 2 * diagonal.index(0)
+    return False
+
+
+def vitoria(tabuleiro, jogador):
+    #vitoria: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador e verifica se tem duas pecas
+    em linha e uma posicao livre, devolvendo a posicao livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("vitoria: algum dos argumentos e invalido")
+
+    if vitoria_linhas(tabuleiro, jogador):
+        return vitoria_linhas(tabuleiro, jogador)
+    if vitoria_colunas(tabuleiro, jogador):
+        return vitoria_colunas(tabuleiro, jogador)
+    if vitoria_diagonal(tabuleiro, jogador):
+        return vitoria_diagonal(tabuleiro, jogador)
+    return False
+
+
+def bloqueio(tabuleiro, jogador):
+    #bloqueio: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador e verifica se o adversario 
+    tem duas pecas em linha e uma posicao livre, devolvendo a posicao livre
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("vitoria: algum dos argumentos e invalido")
+    if jogador == 1:
+        adversario = -1
+    else:
+        adversario = 1
+    return vitoria(tabuleiro, adversario)
+
+
+def normal(tabuleiro, jogador):
+    #normal: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador e executa o passo
+    da estrategia "normal" com maior hipotesses de vencer o jogo
+    '''
+    if not eh_tabuleiro(tabuleiro) or (not jogador in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("normal: algum dos argumentos e invalido")
+
+    posicao = vitoria(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    posicao = bloqueio(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    if eh_posicao_livre(tabuleiro, 5):
+        return 5
+    posicao = canto_oposto(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    return basico(tabuleiro)
+
+
+def bifurcacao(tabuleiro, jogador):
+    #bifurcacao: tabuleiro X jogador -> tuplo_bifurcacoes
+    '''Recebe um tabuleiro e um jogador, verificando se o jogador tem duas 
+    linhas, colunas ou diagonais que se intersetam, onde cada uma contem uma 
+    das suas pecas e devolve o tuplo de todas as poiscoes que sejam uma bifurcacao, 
+    se estiverem livres
+    '''
+
+    if not eh_tabuleiro(tabuleiro) or (jogador not in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("bifurcacao: algum dos argumentos e invalido")
+    posicoes_livres = obter_posicoes_livres(tabuleiro)
+    bifurcacoes = ()
+
+    for posicao in posicoes_livres:
+        counter = 0
+        novo_tab = marcar_posicao(tabuleiro, jogador, posicao)
+        if vitoria_linhas(novo_tab, jogador) > 0:
+            counter = counter + 1
+        if vitoria_colunas(novo_tab, jogador) > 0:
+            counter = counter + 1
+        if vitoria_diagonal(novo_tab, jogador):
+            counter = counter + 1
+        if counter > 1:
+            bifurcacoes = bifurcacoes + (posicao,)
+    if len(bifurcacoes) > 0:
+        return bifurcacoes
+    return False
+
+
+def dois_em_linha(tabuleiro, jogador, bifurcacoes):
+    # tabuleiro X jogador X tuplo_bifurcacoes -> posicao
+    '''Recebe um tabuleiro, um jogador e um tuplo com as bifurcacoes do 
+    adversario. Verifica se ha uma posicao que permita ter um 2 em linha,
+    para forcar o adversario a defender, desde que essa defesa nao gere uma
+    bifurcacao. Devolve a primeira posicao que verifique estes criterios
+    '''
+    adversario = obter_adversario(jogador)
+
+    for posicao in obter_posicoes_livres(tabuleiro):
+        temp_tab = marcar_posicao(tabuleiro, jogador, posicao)
+
+        if vitoria(temp_tab, jogador) > 0:
+            a_bloquear = bloqueio(temp_tab, adversario)
+
+            if not a_bloquear in bifurcacoes:
+                return posicao
+
+    return False
+
+
+def bloqueio_bifurcacao(tabuleiro, jogador):
+    #bloqueio_bifurcacao: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador, verificando se o adversario consegue
+    criar uma bifurcacao. Nesse caso, devolve a posicao de intersecao da 
+    bifurcacao do adversario.
+    '''
+
+    if not eh_tabuleiro(tabuleiro) or (jogador not in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("bloqueio_bifurcacao: algum dos argumentos e invalido")
+
+    adversario = obter_adversario(jogador)
+    bifurcacao_adversario = bifurcacao(tabuleiro, adversario)
+
+    if type(bifurcacao_adversario) == tuple and len(bifurcacao_adversario) > 1:
+
+        if not dois_em_linha(tabuleiro, jogador, bifurcacao_adversario) is False:
+            return dois_em_linha(tabuleiro, jogador, bifurcacao_adversario)
+
+    if type(bifurcacao_adversario) == tuple and len(bifurcacao_adversario) == 1:
+        return bifurcacao_adversario[0]
+    return False
+
+
+def perfeito(tabuleiro, jogador):
+    #perfeito: tabuleiro X jogador -> posicao
+    '''Recebe um tabuleiro e um jogador e executa o passo
+    da estrategia "perfeito" com maior hipotesses de vencer o jogo'''
+    if not eh_tabuleiro(tabuleiro) or (jogador not in [-1,1] or
+    type(jogador) != int):
+        raise ValueError("perfeito: algum dos argumentos e invalido")
+    
+    posicao = vitoria(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    posicao = bloqueio(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    posicao = bifurcacao(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao[0]
+    posicao = bloqueio_bifurcacao(tabuleiro,jogador)
+    if not posicao is False:
+        return posicao
+    posicao = normal(tabuleiro, jogador)
+    if not posicao is False:
+        return posicao
+    return False
+
+
+def escolher_posicao_auto(tabuleiro, jogador, estrategia):
+    #escolher_posicao_auto: tabuleiro X jogador X estrategia -> posicao
+    '''Recebe um tabuleiro, um inteiro identificando um jogador
+    (1 para o jogador "X" ou -1 para o jogador "O") e uma estrategia de jogo e
+    devolve a posicao escolhida automaticamente de acordo com a estrategia.'''
+
+    if not eh_tabuleiro(tabuleiro) or \
+    (jogador not in [-1,1] or type(jogador) != int) or \
+    estrategia not in ['basico','normal','perfeito']:
+        raise ValueError("escolher_posicao_auto: algum dos argumentos e invalido")
+
+    if estrategia == 'perfeito':
+        return perfeito(tabuleiro, jogador)
+    if estrategia == 'normal':
+        return normal(tabuleiro, jogador)
+    if estrategia == 'basico':
+        return basico(tabuleiro)
+
+
+def turno_computador(tabuleiro,jogador, estrategia):
+    #turno_computador: tabuleiro X jogador X estrategia -> novo_tabuleiro
+    '''Recebe um tabuleiro, um inteiro representado o computador e a estrategia
+    a executar, devolvendo o tabuleiro resultante.'''
+
+    if not eh_tabuleiro(tabuleiro) or \
+    estrategia not in ['basico','normal','perfeito'] or \
+    (jogador not in [-1,1] or type(jogador) != int):
+
+        raise ValueError("turno computador: algum dos argumentos e invalido")
+    print('Turno do computador ({}):'.format(estrategia))
+    posicao = escolher_posicao_auto(tabuleiro, jogador, estrategia)
+    return marcar_posicao(tabuleiro, jogador, posicao)
+
+
+def turno_jogador(tabuleiro, jogador):
+    #turno_jogador: tabuleiro X jogador -> novo_tabuleiro
+    '''Recebe um tabuleiro e um inteiro representado o jogador, pedindo um 
+    input para escolher uma posicao a ocupar e devolvendo o 
+    tabuleiro resultante'''
+
+    if not eh_tabuleiro(tabuleiro) or \
+    (jogador not in [-1,1] or type(jogador) != int):
+        raise ValueError("turno jogador: algum dos argumentos e invalido")
+    posicao = escolher_posicao_manual(tabuleiro)
+    return marcar_posicao(tabuleiro, jogador, posicao)
+
+
+def jogo_acabou(tabuleiro):
+    #jogo_acabou: tabuleiro -> resultado
+    '''Recebe um tabuleiro e verifica se o ha vencedor, empate ou se ainda ha 
+    posicoes livres'''
+    if not eh_tabuleiro(tabuleiro):
+        raise ValueError("jogo_acabou: algum dos argumentos e invalido")
+    if jogador_ganhador(tabuleiro) == 1:
+        return 'X'
+    elif jogador_ganhador(tabuleiro) == -1:
+        return 'O'
+    if obter_posicoes_livres(tabuleiro) == ():
+        return 'EMPATE'
+    return False
+
+
+def jogo_do_galo(simbolo, estrategia):
+    #jogo_do_galo: simbolo X estrategia -> resultado
+    '''Recebe um simbolo ("X" ou "O"), que o jogador utilizara, e uma 
+    estrategia para ser executada pelo computador no decorrer do jogo. Imprime
+    o tabuleiro apos cada jogada e devolve o resultado do jogo.'''
+    if simbolo not in ['O','X'] or \
+    estrategia not in ['basico','normal','perfeito']:
+        raise ValueError("jogo do galo: algum dos argumentos e invalido")
+
+    print("Bem-vindo ao JOGO DO GALO.")
+    print("O jogador joga com '{}'.".format(simbolo))
+    tabuleiro = ((0,0,0),(0,0,0),(0,0,0))
+    if simbolo == 'X':
+        jogador = 1
+        computador = -1
+    else:
+        jogador = -1
+        computador = 1
+    
+    while True:
+        if jogador == 1:
+            tabuleiro = turno_jogador(tabuleiro, jogador)
+            print(tabuleiro_str(tabuleiro))
+            if jogo_acabou(tabuleiro) != False:
+                resultado = jogo_acabou(tabuleiro)
+                return resultado
+            tabuleiro = turno_computador(tabuleiro,computador, estrategia)
+            print(tabuleiro_str(tabuleiro))
+        else:
+            tabuleiro = turno_computador(tabuleiro, computador, estrategia)
+            print(tabuleiro_str(tabuleiro))
+            if jogo_acabou(tabuleiro) != False:
+                resultado = jogo_acabou(tabuleiro)
+                return resultado
+            tabuleiro = turno_jogador(tabuleiro, jogador)
+            print(tabuleiro_str(tabuleiro))
+        if jogo_acabou(tabuleiro) != False:
+                resultado = jogo_acabou(tabuleiro)
+                return resultado
+
+
+
+
+#Ver cantos/laterais com for
+#usar eh_posicao antes de eh_posicao livre para ficar melhor
