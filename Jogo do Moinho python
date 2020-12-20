@@ -16,6 +16,7 @@
 #Ver como quero o tabuleiro_para_str. COmo tenho ou "hardcoded" com .format() e uma subfuncao para obter um tuplo com as pecas todas
 #Caso deixe como esta, apagar o peca_por_posicao
 
+#Ver se deve ser '[X]' ou '['X']'
 
 
 
@@ -79,7 +80,7 @@ def posicao_para_str(p):
 def posicao_para_inteiro(p):
     #posicao_para_inteiro: posicao -> inteiro
     '''Recebe uma posicao e devolve um inteiro correspondente de 1 a 9'''
-
+    #print('posicao_para_inteiro: obter_pos_l', obter_pos_l(p))
     posicao = 1 + (int(obter_pos_l(p)) - 1) * 3 #A sucessao 1 + (n_linha -1) * 3
     for coluna in ('a','b','c'):           #da a primeira posicao de cada linha
         if obter_pos_c(p) == coluna:
@@ -121,12 +122,12 @@ def obter_posicoes_adjacentes(p):
 
 
 #p1 = cria_posicao('a', '2')
-p2 = cria_posicao('b', '3')
+#p2 = cria_posicao('b', '3')
 #print(p1)
 #print(p2)   #a3, a2, b2, c2, c3
 #print(posicoes_iguais(p1, p2))
 #print(posicao_para_str(p1))
-print(tuple(posicao_para_str(p) for p in obter_posicoes_adjacentes(p2)))
+#print(tuple(posicao_para_str(p) for p in obter_posicoes_adjacentes(p2)))
 #p1 = cria_posicao('a', '4')
 
 
@@ -176,6 +177,9 @@ def peca_para_inteiro(j):
     jogador = -1
     for x in ('O', ' ', 'X'):
         if pecas_iguais(j, cria_peca(x)):
+            ###print('peca_para_inteiro: peca ->', j)
+            ###print('peca_para_inteiro: termo comparacao ->', cria_peca(x))
+            ###print(pecas_iguais(j, cria_peca(x)))
             return jogador
         jogador = jogador + 1
 
@@ -184,11 +188,11 @@ def inteiro_para_peca(num):
     #inteiro_para_peca: inteiro -> peca
     '''Recebe um numero inteiro e devolve a peca correspondente'''
     if num == -1:
-        return 'O'
+        return cria_peca('O')
     elif num == 0:
-        return ' '
+        return cria_peca(' ')
     elif num == 1:
-        return 'X'
+        return cria_peca('X')
 
 #j1 = cria_peca('X')
 #j2 = cria_peca('O')
@@ -220,26 +224,52 @@ def obter_peca(t, p):
     #obter_peca: tabuleiro × posicao -> peca
     '''Devolve a peca na posicao p do tabuleiro. Se a posicao nao
     estiver ocupada, devolve uma peca livre'''
-    return t[p]
+    ###print('\n\nobter_peca: pos',p)
+    ###print('peca por posicao:', peca_por_posicao(t))
+    ###print('\nlalalala: ->\n', peca_por_posicao(t)[posicao_para_inteiro(p) - 1])
+    return peca_por_posicao(t)[posicao_para_inteiro(p) - 1]
 
 
 def obter_vetor(t, s):
-    #obter_vetor : tabuleiro × str -> tuplo de pecas
-    '''Devolve todas as pecas da linha ou coluna especificada pelo
-    seu argumento'''
+    #obter_vetor: tabuleiro × str -> tuplo de pecas
+    '''Devolve todas as pe¸cas da linha ou coluna especificada pelo
+    seu argumento.'''
 
-
-    if s in (1,2,3):
-        return tuple(t[s - 1])
+    for linha in range(1,4):
+        if s == obter_pos_l(cria_posicao('a',str(linha))):
+            return tuple(inteiro_para_peca(inteiro) for inteiro in t[linha - 1])
+    #if s in ('1','2','3'):
+        #return tuple(t[s - 1])
 
     num_coluna = 1
+    acabou = False
     for coluna in ('a','b','c'):
-        if coluna == s:
-            return num_coluna
-        num_coluna = num_coluna + 1
+        if coluna != s and not acabou:
+            num_coluna = num_coluna + 1
+        elif coluna == s:
+            acabou = True
+    ###print(obter_pos_l(cria_posicao('a',str(linha))))
+    ###print(s)
+    ###print(num_coluna)
+    ###print('t', t)
+    ###print('t[0]', t[0])
+    ###print(t[0][num_coluna - 1])
+    ###print('t[1]', t[1])
+    ###print(t[1][num_coluna - 1])
+    ###print('t[1]', t[1])
+    ###print(t[2][num_coluna - 1])
+    return (inteiro_para_peca(t[0][num_coluna - 1]), 
+    inteiro_para_peca(t[1][num_coluna - 1]), 
+    inteiro_para_peca(t[2][num_coluna - 1]))
 
-    return (s[0][num_coluna - 1], s[1][num_coluna - 1], s[2][num_coluna - 1])
 
+def obter_vetor_jogadores(t, s):
+    ##obter_vetor_jogadores : tabuleiro × str -> tuplo de pecas
+    '''Devolve todas as pecas da linha ou coluna especificada pelo
+    seu argumento, na forma de um inteiro correspondente aos
+    respetivos jogadores'''
+    ###print('s',s)
+    return tuple(peca_para_inteiro(peca) for peca in obter_vetor(t, s))
 
 def eh_posicao_livre(t, p):
     #eh_posicao_livre: tabuleiro x posicao -> booleano
@@ -251,23 +281,30 @@ def eh_posicao_livre(t, p):
         for entrada in linha:
             posicoes = posicoes + (entrada,)
     
-    return posicoes[p - 1] == 0
+    return posicoes[posicao_para_inteiro(p) - 1] == 0
 
 
 def alterar_tabuleiro(t, j, p):
     #alterar_tabuleiro: tabuleiro x peca x posicao -> tabuleiro
     '''Modifica destrutivamente o tabuleiro t, removendo ou colocando,
     uma peca j na posicao p, e devolve o proprio tabuleiro.'''
- 
+    ###print('jjj', j)
     posicao_atual = 1
     num_linha = 0
-    num_coluna = 0
     for linha in t:
-
+        num_coluna = 0
         for entrada in linha:
+            #print('alterar_tabuleiro: pos_atual', posicao_atual)
+            #print('alterar_tabuleiro: p',p)
+            #print('alterar_tabuleiro: pos para inteiro',posicao_para_inteiro(p) )
             if posicao_atual == posicao_para_inteiro(p):
-
+                ###print('alterar_tabuleiro: pos_atual', posicao_atual)
+                ###print('alterar_tabuleiro: pos para inteiro',posicao_para_inteiro(p) )
+                ###print('alterar_tabuleiro: t ->', t)
+                ###print('alterar_tabuleiro: j ->', j)
+                ###print('alterar_tabuleiro: peca_para_inteiro(j)', peca_para_inteiro(j))
                 t[num_linha][num_coluna] = peca_para_inteiro(j)
+                ###print('alterar_tabuleiro: t ->', t, '\n\n\n')
             posicao_atual = posicao_atual + 1
             num_coluna = num_coluna + 1
         num_linha = num_linha + 1
@@ -277,9 +314,10 @@ def coloca_peca(t, j, p):
     #coloca_peca: tabuleiro × peca × posicao -> tabuleiro
     '''Modifica destrutivamente o tabuleiro t, colocando a peca j
     na posicao p, e devolve o proprio tabuleiro.'''
-
+    ###print('coloca_peca: j', j)
     if eh_posicao_livre(t,p):
         alterar_tabuleiro(t, j, p)
+        ##print('coloca_peca: t ->', t)
     return t
 
 
@@ -287,7 +325,7 @@ def remove_peca(t, p):
     #remove_peca: tabuleiro x posicao -> tabuleiro
     '''Modifica destrutivamente o tabuleiro t, removendo a peca
     da posicao p, e devolve o proprio tabuleiro'''
-
+    #print('remove_peca: p', p)
     alterar_tabuleiro(t, cria_peca(' '), p)
     return t
 
@@ -298,10 +336,17 @@ def move_peca(t, p1, p2):
     na posicao p1, para a posicao p2, e devolve o proprio tabuleiro'''
 
     peca1 = obter_peca(t, p1)
-    peca2 = obter_peca(t, p2)
+    #peca2 = obter_peca(t, p2)
     if eh_posicao_livre(t, p2):
-        remove_peca(t, peca1)
-        coloca_peca(t, peca1, peca2)
+        remove_peca(t, p1)
+        ###print('\n\nACABOU REMOVE PECA\n\n\n')
+        ##print('move_peca: remove_peca', t)
+        ###print('move_peca: p1 ->', p1)
+        ###print('move_peca: obter_peca(t, p1) ->', obter_peca(t, p1))
+        ###print('move_peca: peca1', peca1)
+        ##print('move_peca: p2', p2)
+        coloca_peca(t, peca1, p2)
+        ##print('move_peca: coloca_peca',t)
     
     return t
 
@@ -322,8 +367,8 @@ def eh_tabuleiro(arg):
             if type(elem) != int or elem not in [-1,0,1]:
                 return False
 
-    posicoes = tuple(obter_vetor(arg, 1) + obter_vetor(arg, 2) + 
-    obter_vetor(arg,3))
+    posicoes = tuple(obter_vetor_jogadores(arg, 1) + 
+    obter_vetor_jogadores(arg, 2) + obter_vetor_jogadores(arg,3))
 
     return posicoes.count(1) <= 3 and posicoes.count(-1) <= 3 and \
         not (ganhou(arg, 1) and ganhou(arg, -1))
@@ -344,14 +389,14 @@ def peca_por_posicao(t):
     pecas = ()
     for linha in t:
         for entrada in linha:
-            pecas = pecas + (inteiro_para_peca(entrada))
+            pecas = pecas + (inteiro_para_peca(entrada),)
     return pecas
 
 
 def tabuleiro_para_str(t):
     #tabuleiro_para_str: tabuleiro -> str
     '''Devolve a cadeia de caracteres que representa o tabuleiro'''
-    string = ' a b c\n1 '
+    string = '    a     b     c\n1 '
 
     num_linha = 2
     intermedio = 1
@@ -359,21 +404,32 @@ def tabuleiro_para_str(t):
         num_entrada_linha = 1
 
         for entrada in linha:
-
-            string = string +  + peca_para_str(inteiro_para_peca(entrada)) + '-'
-            if num_entrada_linha == 3:
+            string = string + peca_para_str(inteiro_para_peca(entrada))
+            if num_entrada_linha < 3:
+                string += '-'
+            elif num_entrada_linha == 3:
                 string += '\n'
             num_entrada_linha += 1
 
         if intermedio == 1:
-            string += '| \ | / |\n{} '.format(num_linha)
-        else:
-            string += '| / | \ |\n{} '.format(num_linha)
+            string += '    |  \  |  /  |\n{} '.format(num_linha)
+        elif intermedio < 3:
+            string += '    |  /  |  \  |\n{} '.format(num_linha)
+
         intermedio += 1
         num_linha += 1
-
     return string
 
+
+def tuplo_para_tabuleiro(t):
+    #tuplo_para_tabuleiro: tuplo -> tabuleiro
+    '''Devolve o tabuleiro que e representado pelo tuplo t com 3 tuplos, 
+    cada um deles contendo 3 valores inteiros iguais a 1, -1 ou 0'''
+    a1 = obter_pos_l(cria_posicao('a','1'))
+    a2 = obter_pos_l(cria_posicao('a','2'))
+    a3 = obter_pos_l(cria_posicao('a','3'))
+    return (tuple(obter_vetor_jogadores(t, a1)), 
+    tuple(obter_vetor_jogadores(t, a2)), tuple(obter_vetor_jogadores(t, a3)))
 
 
 def ganhou_horizontal(tabuleiro, jogador):
@@ -381,8 +437,9 @@ def ganhou_horizontal(tabuleiro, jogador):
     '''Recebe um tabuleiro e um jogador (1 se usa X, -1 se usa O), devolvendo 
     True se tiver tres posicoes ocupadas numa mesma linha
     '''
-    for linha in range(1,4):
-        vetor = obter_vetor(tabuleiro, linha)
+    for x in range(1,4):
+        linha = obter_pos_l(cria_posicao('a', str(x)))
+        vetor = obter_vetor_jogadores(tabuleiro, linha)
         if vetor.count(jogador) == 3:
             return True
     
@@ -395,7 +452,7 @@ def ganhou_vertical(tabuleiro, jogador):
     True se tiver tres posicoes ocupadas numa mesma coluna
     '''
     for coluna in ('a','b','c'):
-        vetor = obter_vetor(tabuleiro, coluna)
+        vetor = obter_vetor_jogadores(tabuleiro, coluna)
         if vetor.count(jogador) == 3:
             return True
     
@@ -407,20 +464,35 @@ def ganhou(tabuleiro, jogador):
     '''Recebe um tabuleiro e um jogador e devolve True, caso tenha ganho, e
     False, caso contrario'''
 
-    return ganhou_horizontal(tabuleiro, 1) or ganhou_vertical(tabuleiro, 1)
+    return ganhou_horizontal(tabuleiro, jogador) or ganhou_vertical(tabuleiro, jogador)
 
 
-def jogador_ganhador(tabuleiro):
-    #jogador_ganhador: tabuleiro -> vencedor
-    '''Recebe um tabuleiro, e devolve um valor inteiro a indicar o jogador
-    que ganhou a partida no tabuleiro passado por argumento, sendo o valor 
-    igual a 1 se ganhou o jogador que joga com "X", -1 se ganhou o jogador 
-    que joga com "O", ou 0 se nao ganhou nenhum jogador.
+def obter_ganhador(tabuleiro):
+    #obter_ganhador: tabuleiro -> peca
+    '''Devolve uma peca do jogador que tenha as suas 3 pecas em linha
+    na vertical ou na horizontal no tabuleiro. Se nao existir nenhum ganhador,
+    devolve uma peca livre
     '''
 
     if ganhou(tabuleiro, 1):
-        return 1
+        return inteiro_para_peca(1)
     elif ganhou(tabuleiro, -1):
-        return -1
+        return inteiro_para_peca(-1)
     else:
-        return 0
+        return inteiro_para_peca(0)
+
+
+t = cria_tabuleiro()
+#t = coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))
+#rint(tabuleiro_para_str(coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))))
+#t = coloca_peca(t, cria_peca('O'), cria_posicao('b','2'))
+#print(tabuleiro_para_str(coloca_peca(t, cria_peca('O'), cria_posicao('b','2'))))
+#t = move_peca(t, cria_posicao('a','1'), cria_posicao('b','1'))
+#print(tabuleiro_para_str(move_peca(t, cria_posicao('a','1'), cria_posicao('b','1'))))
+t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
+#print(tabuleiro_para_str(t))
+
+#print(peca_para_str(obter_ganhador(t)))
+#print(obter_vetor(t, 'a'))
+#print(tuple(peca_para_str(peca) for peca in obter_vetor(t, 'a')))
+#print(tuple(peca_para_str(peca) for peca in obter_vetor(t, '2')))
