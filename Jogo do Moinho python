@@ -482,6 +482,39 @@ def obter_ganhador(tabuleiro):
         return inteiro_para_peca(0)
 
 
+def obter_posicoes(t, j):
+    #obter_posicoes: tabuleiro x peca -> tuplo de posicoes
+    '''Devolve um tuplo com as posicoes ocupadas pela peca j, na ordem
+    de leitura do tabuleiro'''
+
+    tabuleiro = peca_por_posicao(t)
+    index = 0
+    tuplo_posicoes = ()
+    for posicao in tabuleiro:
+
+        if posicao == j:
+            tuplo_posicoes += (inteiro_para_posicao(index + 1),)
+        index += 1
+
+    return tuplo_posicoes
+
+
+def obter_posicoes_livres(t):
+    #obter_posicoes_livres: tabuleiro -> tuplo de posicoes
+    '''Devolve um tuplo com as posicoes nao ocupadas pelas pecas
+    de qualquer um dos dois jogadores na ordem de leitura do tabuleiro.'''
+
+    return obter_posicoes(t, cria_peca(' '))
+
+
+def obter_posicoes_jogador(t, j):
+    #obter_posicoes_jogador: tabuleiro × peca -> tuplo de posicoes
+    '''Devolve um tuplo com as posicoes ocupadas pelas pecas
+    j de um dos dois jogadores na ordem de leitura do tabuleiro. '''
+
+    return obter_posicoes(t, j)
+
+
 t = cria_tabuleiro()
 #t = coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))
 #rint(tabuleiro_para_str(coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))))
@@ -492,6 +525,8 @@ t = cria_tabuleiro()
 t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
 #print(tabuleiro_para_str(t))
 
+#print(tuple(posicao_para_str(p) for p in obter_posicoes_livres(t)))
+#print(tuple(posicao_para_str(p) for p in obter_posicoes_jogador(t, cria_peca('X'))))
 #print(peca_para_str(obter_ganhador(t)))
 #print(obter_vetor(t, 'a'))
 #print(tuple(peca_para_str(peca) for peca in obter_vetor(t, 'a')))
