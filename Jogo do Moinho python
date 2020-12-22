@@ -352,6 +352,7 @@ def alterar_tabuleiro(t, j, p):
                 ###print('alterar_tabuleiro: j ->', j)
                 ###print('alterar_tabuleiro: peca_para_inteiro(j)', peca_para_inteiro(j))
                 t[num_linha][num_coluna] = peca_para_inteiro(j)
+
                 ###print('alterar_tabuleiro: t ->', t, '\n\n\n')
             posicao_atual = posicao_atual + 1
             num_coluna = num_coluna + 1
@@ -450,7 +451,7 @@ def peca_por_posicao(t):
 def tabuleiro_para_str(t):
     #tabuleiro_para_str: tabuleiro -> str
     '''Devolve a cadeia de caracteres que representa o tabuleiro'''
-    string = '    a     b     c\n1 '
+    string = '   a   b   c\n1 '
 
     num_linha = 2
     intermedio = 1
@@ -461,14 +462,14 @@ def tabuleiro_para_str(t):
             string = string + peca_para_str(inteiro_para_peca(entrada))
             if num_entrada_linha < 3:
                 string += '-'
-            elif num_entrada_linha == 3:
+            elif num_entrada_linha == 3 and intermedio < 3:
                 string += '\n'
             num_entrada_linha += 1
 
         if intermedio == 1:
-            string += '    |  \  |  /  |\n{} '.format(num_linha)
+            string += '   | \ | / |\n{} '.format(num_linha)
         elif intermedio < 3:
-            string += '    |  /  |  \  |\n{} '.format(num_linha)
+            string += '   | / | \ |\n{} '.format(num_linha)
 
         intermedio += 1
         num_linha += 1
@@ -638,6 +639,14 @@ def obter_movimento_manual(t, j):
 #print('tab:',tab)
 #m = obter_movimento_manual(tab, cria_peca('O'))
 
+peca = cria_peca('X')
+pos = cria_posicao('a','1')
+tab = cria_tabuleiro()
+coloca_peca(tab, peca, pos)
+print(tab)
+print(tabuleiro_para_str(tab))
+
+' a b c\n1 [X]-[ ]-[ ]\n | \\ | / |\n2 [ ]-[ ]-[ ]\n | / | \\ |\n3 [ ]-[ ]-[ ]'
 
 
 '''def obter_movimento_auto(t, j, string):
