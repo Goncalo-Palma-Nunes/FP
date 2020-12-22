@@ -1,8 +1,8 @@
-#manter nome dos argumentos curtos ou meter mais explicito? Perguntar remédios
-#O mesmo no que diz respeito ao usar de c/l nas assinaturas das funções
-#Para as estratégias da fase de colocação, podemos readaptar o código do 1º projeto?
+#manter nome dos argumentos curtos ou meter mais explicito? Perguntar remedios
+#O mesmo no que diz respeito ao usar de c/l nas assinaturas das funcoes
+#Para as estrategias da fase de colocacao, podemos readaptar o codigo do 1 projeto?
 
-#fazer função que transforma uma posicao num inteiro representante da posicao
+#fazer funcao que transforma uma posicao num inteiro representante da posicao
 
 #Voltar atras e acabar obter_posicoes_adjacentes
 #posicoes adjacentes, percorrer tuplos (x,y) que representam a deslocacao e ver se essa posicao esta no tabuleiro
@@ -18,13 +18,21 @@
 
 #Ver se deve ser '[X]' ou '['X']'
 
+#docstring da obter_posicao_manual
 
+#eh_tab
+#nao pode conter mais de 1 peca mais de um jogador que docontrario,
+#isto quer dizer q no maximo
+#o x pode ter 3
+#e o y 2
+#e e tab?
 
 def cria_posicao(c, l):
     #cria_posicao: str × str -> posicao
     '''Recebe duas cadeias de carateres correspondentes a coluna c
     e a linha l de uma posicao e devolve a posicao correspondente'''
-    if (not type(c) is str or not c.isalpha() or not len(c) == 1) or\
+    if (not type(c) is str or not c.isalpha() or not len(c) == 1 or 
+        not c in ('a','b','c')) or\
         (not type(l) is str or not l.isdigit() or not len(l) == 1 or\
         (int(l) < 1 or int(l) > 3)):
         raise ValueError('cria_posicao: argumentos invalidos')
@@ -74,7 +82,23 @@ def posicao_para_str(p):
     '''Devolve a cadeia de caracteres "cl" que representa o seu
     argumento, sendo os valores c e l as componentes coluna e linha de p.'''
 
-    return p[0] + p[1]
+    return obter_pos_c(p) + obter_pos_l(p)
+
+
+def str_para_posicao(string):
+    #str_para_posicao: str -> posicao
+    '''Recebe uma cadeia de caracteres e devolve a posicao correspondente'''
+    new_string = ''
+
+    for coluna in ('a','b','c'):
+        if string[0] == coluna:
+            pos_coluna += coluna
+    
+    for linha in range(1,4):
+        if string[1] == linha:
+            pos_linha += linha
+    
+    return cria_posicao(pos_coluna, pos_linha)
 
 
 def posicao_para_inteiro(p):
@@ -106,19 +130,42 @@ def obter_posicoes_adjacentes(p):
     posicao = posicao_para_inteiro(p)
     adjacentes = []
 
-    if posicao in (1,3,5,7,9):
+    if posicao in (1,):
+        translacoes = ((0,1),(1,0), (1,1))
+    elif posicao in (3,):
+        translacoes = ((0,-1), (1,-1), (1,0))
+    elif posicao in (4,):
+        translacoes = ((-1,0), (0,1), (1,0))
+    elif posicao in (5,):
         translacoes = ((-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1),
                      (1,0), (1,1))
-
-    elif posicao in (2,4,6,8):
+    elif posicao in (6,):
+        translacoes = ((-1,0), (0,-1), (1,0))
+    elif posicao in (7,):
+        translacoes = ((-1,0), (-1,1), (0,1), (1,0), (1,1))
+    elif posicao in (9,):
+        translacoes = ((-1,-1), (-1,0), (0,-1))
+    elif posicao in (2,8):
         translacoes = ((-1,0), (0,-1), (0,1), (1,0))
 
     for translacao in translacoes:
         posicao_adjacente = posicao + 3 * translacao[0] + translacao[1]
+
         if 1 <= posicao_adjacente <= 9 and posicao_adjacente != posicao:
             adjacentes.append(inteiro_para_posicao(posicao_adjacente))
         
-    return adjacentes
+    return tuple(adjacentes)
+
+
+def ha_adjacentes_livres(t, p):
+    #ha_adjacentes_livres(t, p): tabuleiro x posicao -> booleano
+    ''' Devolve True se houver posicoes adjacentes a posicao p,
+    que nao estejam ocupadas'''
+    adjacentes = obter_posicoes_adjacentes(p)
+    for posicao in adjacentes:
+        if eh_posicao_livre(t, posicao):
+            return True
+    return False
 
 
 #p1 = cria_posicao('a', '2')
@@ -167,7 +214,7 @@ def peca_para_str(j):
     #peca_para_str : peca -> str
     '''Devolve a cadeia de caracteres que representa o jogador dono
     da peca, isto e, "[X]", "[O]" ou "[ ]".'''
-    return j.__repr__()
+    return '[' + j[0] + ']'
 
 
 def peca_para_inteiro(j):
@@ -271,6 +318,7 @@ def obter_vetor_jogadores(t, s):
     ###print('s',s)
     return tuple(peca_para_inteiro(peca) for peca in obter_vetor(t, s))
 
+
 def eh_posicao_livre(t, p):
     #eh_posicao_livre: tabuleiro x posicao -> booleano
     '''Devolve True apenas no caso da posicao p do tabuleiro
@@ -336,7 +384,6 @@ def move_peca(t, p1, p2):
     na posicao p1, para a posicao p2, e devolve o proprio tabuleiro'''
 
     peca1 = obter_peca(t, p1)
-    #peca2 = obter_peca(t, p2)
     if eh_posicao_livre(t, p2):
         remove_peca(t, p1)
         ###print('\n\nACABOU REMOVE PECA\n\n\n')
@@ -367,11 +414,18 @@ def eh_tabuleiro(arg):
             if type(elem) != int or elem not in [-1,0,1]:
                 return False
 
-    posicoes = tuple(obter_vetor_jogadores(arg, 1) + 
-    obter_vetor_jogadores(arg, 2) + obter_vetor_jogadores(arg,3))
 
-    return posicoes.count(1) <= 3 and posicoes.count(-1) <= 3 and \
-        not (ganhou(arg, 1) and ganhou(arg, -1))
+    posicoes_x = obter_posicoes(arg, cria_peca('X'))
+    posicoes_o = obter_posicoes(arg, cria_peca('O'))
+    diferenca_pecas = abs(len(posicoes_o) - len(posicoes_x))
+    ###print('pos_x', posicoes_x)
+    ###print('pos_o', posicoes_o)
+    ###print('dif', diferenca_pecas)
+
+    return len(posicoes_o) <= 3 and \
+        len(posicoes_x) <= 3 and \
+        not (ganhou(arg, 1) and ganhou(arg, -1)) and diferenca_pecas <= 1
+        
 
 
 def tabuleiros_iguais(t1, t2):
@@ -428,8 +482,8 @@ def tuplo_para_tabuleiro(t):
     a1 = obter_pos_l(cria_posicao('a','1'))
     a2 = obter_pos_l(cria_posicao('a','2'))
     a3 = obter_pos_l(cria_posicao('a','3'))
-    return (tuple(obter_vetor_jogadores(t, a1)), 
-    tuple(obter_vetor_jogadores(t, a2)), tuple(obter_vetor_jogadores(t, a3)))
+    return [list(obter_vetor_jogadores(t, a1)), 
+    list(obter_vetor_jogadores(t, a2)), list(obter_vetor_jogadores(t, a3))]
 
 
 def ganhou_horizontal(tabuleiro, jogador):
@@ -490,12 +544,14 @@ def obter_posicoes(t, j):
     tabuleiro = peca_por_posicao(t)
     index = 0
     tuplo_posicoes = ()
+    ###print(tabuleiro)
     for posicao in tabuleiro:
 
         if posicao == j:
+            ###print(posicao)
             tuplo_posicoes += (inteiro_para_posicao(index + 1),)
         index += 1
-
+    ###print('acabou')
     return tuplo_posicoes
 
 
@@ -515,14 +571,14 @@ def obter_posicoes_jogador(t, j):
     return obter_posicoes(t, j)
 
 
-t = cria_tabuleiro()
+#t = cria_tabuleiro()
 #t = coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))
 #rint(tabuleiro_para_str(coloca_peca(t, cria_peca('X'), cria_posicao('a','1'))))
 #t = coloca_peca(t, cria_peca('O'), cria_posicao('b','2'))
 #print(tabuleiro_para_str(coloca_peca(t, cria_peca('O'), cria_posicao('b','2'))))
 #t = move_peca(t, cria_posicao('a','1'), cria_posicao('b','1'))
 #print(tabuleiro_para_str(move_peca(t, cria_posicao('a','1'), cria_posicao('b','1'))))
-t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
+#t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
 #print(tabuleiro_para_str(t))
 
 #print(tuple(posicao_para_str(p) for p in obter_posicoes_livres(t)))
@@ -531,3 +587,59 @@ t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
 #print(obter_vetor(t, 'a'))
 #print(tuple(peca_para_str(peca) for peca in obter_vetor(t, 'a')))
 #print(tuple(peca_para_str(peca) for peca in obter_vetor(t, '2')))
+
+
+def obter_movimento_manual(t, j):
+    #obter_movimento_manual: tabuleiro × peca -> tuplo de posicoes
+    '''placeholder'''
+
+    #colocao = len(obter_posicoes_jogador(t, j)) < 3
+
+    if len(obter_posicoes_jogador(t, j)) < 3:
+        posicao = input('Turno do jogador. Escolha uma posicao: ')
+        
+        if len(posicao) != 2:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+
+        posicao = cria_posicao(obter_pos_c(posicao), obter_pos_l(posicao))
+        if not eh_posicao(posicao) or not eh_posicao_livre(t, posicao):
+            raise ValueError('obter_movimento_manual: escolha invalida')
+
+        return (posicao,)
+
+    posicoes = input('Turno do jogador. Escolha um movimento: ')
+    #posicao = cria_posicao(obter_pos_c(posicao), obter_pos_l(posicao))
+    if len(posicoes) != 4:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+    else:
+        pos1 = cria_posicao(obter_pos_c(posicoes[:2]), obter_pos_l(posicoes[:2]))
+        pos2 = cria_posicao(obter_pos_c(posicoes[2:]), obter_pos_l(posicoes[2:]))
+
+        if not eh_posicao(pos1) or eh_posicao_livre(t, pos1) or \
+            not (pos1 in obter_posicoes_jogador(t, j)) or \
+            not eh_posicao(pos2) or not eh_posicao_livre(t, pos2) or \
+            (posicoes_iguais(pos1, pos2) and ha_adjacentes_livres(t, pos1)):
+
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        return (pos1, pos2)
+
+
+
+#tab = cria_tabuleiro()
+#m = obter_movimento_manual(tab, cria_peca('X'))
+#print(m)
+#print(posicao_para_str(m[0]))
+
+#tab = tuplo_para_tabuleiro(((0,1,-1),(1,-1,0),(1,-1,0)))
+#m = obter_movimento_manual(tab, cria_peca('X'))
+#print(m)
+#print(posicao_para_str(m[0]), posicao_para_str(m[1]))
+
+#print('tab:',tab)
+#m = obter_movimento_manual(tab, cria_peca('O'))
+
+
+
+'''def obter_movimento_auto(t, j, string):
+    #obter_movimento_auto: tabuleiro × peca × str -> tuplo de posicoes
+    return'''
