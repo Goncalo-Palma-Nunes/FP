@@ -469,6 +469,29 @@ def obter_posicoes_jogador(t, j):
     return obter_posicoes(t, j)
 
 
+def validacao_movimento(t, j, posicoes):
+    #validacao_movimento: tabuleiro x peca x str -> booleano
+    '''Devolve True se o movimento corresponder a uma movimentacao valida
+    da peca'''
+
+    if len(posicoes) != 4 or not posicoes[0] in ('a','b','c') or not \
+            posicoes[1] in ('1','2','3') or not posicoes[2] in ('a','b','c') or\
+            not posicoes[3] in ('1','2','3'):
+            return False
+    else:
+        pos1 = cria_posicao(posicoes[0], posicoes[1])
+        pos2 = cria_posicao(posicoes[2], posicoes[3])
+        if eh_posicao(pos1) and pos1 in obter_posicoes_jogador(t, j) and \
+            eh_posicao(pos2):
+
+            if (posicoes_iguais(pos1, pos2) and 
+            len(adjacentes_livres(t, pos1)) == 0) or (eh_posicao_livre(t, pos2)
+            and pos2 in obter_posicoes_adjacentes(pos1)):
+
+                return True
+
+        return False
+
 def obter_movimento_manual(t, j):
     #obter_movimento_manual: tabuleiro x peca -> tuplo de posicoes
     '''Recebe um tabuleiro e uma peca, verifica se o jogador esta na fase
@@ -488,22 +511,12 @@ def obter_movimento_manual(t, j):
         return (posicao,)
 
     posicoes = input('Turno do jogador. Escolha um movimento: ')
-    if len(posicoes) != 4 or not posicoes[0] in ('a','b','c') or not \
-            posicoes[1] in ('1','2','3') or not posicoes[2] in ('a','b','c') or\
-            not posicoes[3] in ('1','2','3'):
-            raise ValueError('obter_movimento_manual: escolha invalida')
-    else:
+    if validacao_movimento(t, j, posicoes):
         pos1 = cria_posicao(posicoes[0], posicoes[1])
         pos2 = cria_posicao(posicoes[2], posicoes[3])
-
-        if not eh_posicao(pos1) or \
-            not (pos1 in obter_posicoes_jogador(t, j)) or \
-            not eh_posicao(pos2) or not eh_posicao_livre(t, pos2) or \
-            (posicoes_iguais(pos1, pos2) and 
-            len(adjacentes_livres(t, pos1)) > 0):
-
-            raise ValueError('obter_movimento_manual: escolha invalida')
         return (pos1, pos2)
+    else:
+        raise ValueError('obter_movimento_manual: escolha invalida')
 
 
 def vitoria_colunas(t, j):
@@ -705,6 +718,7 @@ def moinho(peca, dificuldade):
         .format(dificuldade))
 
     tabuleiro = cria_tabuleiro()
+    print(tabuleiro_para_str(tabuleiro))
     adversario = obter_adversario(peca_para_inteiro(cria_peca(peca[1])))
     jogador_atual = cria_peca('X')
     while obter_ganhador(tabuleiro) == cria_peca(' '):
@@ -712,7 +726,7 @@ def moinho(peca, dificuldade):
             jogada = obter_movimento_manual(tabuleiro, jogador_atual)
             tabuleiro = executar_jogada(tabuleiro, jogador_atual, jogada)
         else:
-            print('Turno do computador {}:'.format(dificuldade))
+            print('Turno do computador ({}):'.format(dificuldade))
 
             jogada = obter_movimento_auto(tabuleiro, 
             inteiro_para_peca(adversario), dificuldade)
@@ -723,5 +737,5 @@ def moinho(peca, dificuldade):
         print(tabuleiro_para_str(tabuleiro))
         jogador_atual = obter_adversario(peca_para_inteiro(jogador_atual))
         jogador_atual = inteiro_para_peca(jogador_atual)
-    
+
     return peca_para_str(obter_ganhador(tabuleiro))
