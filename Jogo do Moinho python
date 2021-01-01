@@ -469,17 +469,19 @@ def validacao_movimento(t, j, posicoes):
     else:
         pos1 = cria_posicao(posicoes[0], posicoes[1])
         pos2 = cria_posicao(posicoes[2], posicoes[3])
-        if eh_posicao(pos1) and pos1 in obter_posicoes_jogador(t, j) and \
-            eh_posicao(pos2):
-
+        
+        if eh_posicao(pos1) and eh_posicao and \
+            any([pos for pos in obter_posicoes_jogador(t, j) 
+            if posicoes_iguais(pos, pos1)]):
+            
             if (posicoes_iguais(pos1, pos2) and 
             len(adjacentes_livres(t, pos1)) == 0) or (eh_posicao_livre(t, pos2)
-            and pos2 in obter_posicoes_adjacentes(pos1)):
+            and any([pos for pos in obter_posicoes_adjacentes(pos1) 
+            if posicoes_iguais(pos, pos2)])):
 
                 return True
 
         return False
-
 
 def obter_movimento_manual(t, j):
     #obter_movimento_manual: tabuleiro x peca -> tuplo de posicoes
@@ -657,6 +659,7 @@ def minimax(tabuleiro, jogador, profundidade, seq_movimentos):
 
                         melhor_resultado = novo_res
                         melhor_seq_movimentos = nova_seq_movimentos
+
         
         return melhor_resultado, melhor_seq_movimentos
 
@@ -688,6 +691,7 @@ def executar_jogada(tabuleiro, peca, jogada):
     else:
         tabuleiro = move_peca(tabuleiro, jogada[0], jogada[1])
     return tabuleiro
+
 
 
 def moinho(peca, dificuldade):
