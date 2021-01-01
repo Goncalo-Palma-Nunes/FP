@@ -117,12 +117,7 @@ def obter_posicoes_adjacentes(p):
 def adjacentes_livres(t, p):
     #adjacentes_livres(t, p): tabuleiro x posicao -> tuplo posicoes
     ''' Devolve um tuplo com as posicoes adjacentes livres'''
-    adjacentes = obter_posicoes_adjacentes(p)
-    adj_livre = ()
-    for posicao in adjacentes:
-        if eh_posicao_livre(t, posicao):
-            adj_livre += (posicao,)
-    return adj_livre
+    return [x for x in obter_posicoes_adjacentes(p) if eh_posicao_livre(t, x)]
 
 
 def cria_peca(s):
@@ -244,11 +239,8 @@ def eh_posicao_livre(t, p):
     '''Devolve True apenas no caso da posicao p do tabuleiro
     corresponder a uma posicao livre'''
 
-    posicoes = ()
-    for linha in t:
-        for entrada in linha:
-            posicoes = posicoes + (entrada,)
-    
+    posicoes = [entrada for linha in t for entrada in linha]  
+
     return posicoes[posicao_para_inteiro(p) - 1] == 0
 
 
@@ -339,11 +331,7 @@ def peca_por_posicao(t):
     #peca_por_posicao: tabuleiro -> tuplo
     '''Recebe um tabuleiro e devolve um tuplo com as pecas,
     ordenadas por posicao'''
-    pecas = ()
-    for linha in t:
-        for entrada in linha:
-            pecas = pecas + (inteiro_para_peca(entrada),)
-    return pecas
+    return tuple(inteiro_para_peca(entrada) for linha in t for entrada in linha)
 
 
 def tabuleiro_para_str(t):
@@ -444,9 +432,9 @@ def obter_posicoes(t, j):
     tabuleiro = peca_por_posicao(t)
     index = 0
     tuplo_posicoes = ()
-    for posicao in tabuleiro:
+    for peca in tabuleiro:
 
-        if posicao == j:
+        if pecas_iguais(peca, j):
             tuplo_posicoes += (inteiro_para_posicao(index + 1),)
         index += 1
 
@@ -491,6 +479,7 @@ def validacao_movimento(t, j, posicoes):
                 return True
 
         return False
+
 
 def obter_movimento_manual(t, j):
     #obter_movimento_manual: tabuleiro x peca -> tuplo de posicoes
@@ -661,14 +650,13 @@ def minimax(tabuleiro, jogador, profundidade, seq_movimentos):
                     seq_movimentos + (pos, adj))
 
                     if melhor_seq_movimentos == None or \
-                        (inteiro_para_peca(jogador) == cria_peca('X') and
-                        novo_res > melhor_resultado) or \
-                        (inteiro_para_peca(jogador) == cria_peca('O') and
-                        novo_res < melhor_resultado):
+                        (pecas_iguais(inteiro_para_peca(jogador),
+                        cria_peca('X')) and novo_res > melhor_resultado) or \
+                        (pecas_iguais(inteiro_para_peca(jogador),
+                        cria_peca('O')) and novo_res < melhor_resultado):
 
                         melhor_resultado = novo_res
                         melhor_seq_movimentos = nova_seq_movimentos
-
         
         return melhor_resultado, melhor_seq_movimentos
 
@@ -678,7 +666,6 @@ def obter_movimento_auto(t, j, string):
     '''Devolve um tuplo com a posicao onde o jogador deve colocar a peca, 
     caso ainda nao tenha colocado 3 pecas, devolvendo um tuplo correspondente a
     um movimento a efetuar, caso esteja na fase de movimentacao'''
-
     if len(obter_posicoes_jogador(t, j)) < 3:
         return (fase_colocacao(t, j),)
     
@@ -703,7 +690,6 @@ def executar_jogada(tabuleiro, peca, jogada):
     return tabuleiro
 
 
-
 def moinho(peca, dificuldade):
     #moinho: str x str -> str
     '''Funcao principal que permite jogar um jogo completo do jogo do moinho
@@ -721,7 +707,8 @@ def moinho(peca, dificuldade):
     print(tabuleiro_para_str(tabuleiro))
     adversario = obter_adversario(peca_para_inteiro(cria_peca(peca[1])))
     jogador_atual = cria_peca('X')
-    while obter_ganhador(tabuleiro) == cria_peca(' '):
+    
+    while pecas_iguais(obter_ganhador(tabuleiro), cria_peca(' ')):
         if peca == peca_para_str(jogador_atual):
             jogada = obter_movimento_manual(tabuleiro, jogador_atual)
             tabuleiro = executar_jogada(tabuleiro, jogador_atual, jogada)
