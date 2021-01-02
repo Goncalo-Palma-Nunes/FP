@@ -1,5 +1,19 @@
 #Goncalo Palma Ribeiro Graca Nunes 99229
 
+
+#TAD posicao
+#A TAD posicao tem uma representacao interna de uma lista com dois elementos
+#(ambos strings), o primeiro representa a coluna da posicao e o outro a linha
+# cria_posicao: str x str -> posicao
+# cria_copia_posicao: posicao -> posicao
+# obter_pos_c: posicao -> str
+# obter_pos_l: posicao -> str
+# eh_posicao: universal -> booleano
+# posicoes_iguais: posicao x posicao -> booleano
+# posicao_para_str: posicao -> str
+# obter_posicoes_adjacentes: posicao -> tuplo de posicoes
+
+
 def cria_posicao(c, l):
     #cria_posicao: str x str -> posicao
     '''Recebe duas cadeias de carateres correspondentes a coluna c
@@ -120,6 +134,17 @@ def adjacentes_livres(t, p):
     return [x for x in obter_posicoes_adjacentes(p) if eh_posicao_livre(t, x)]
 
 
+#TAD peca
+#A representacao interna da TAD peca e uma lista de um elemento (uma string),
+#que pode ser 'X', 'O', ' ', correspendendo a um dado jogador ou peca livre
+# cria_peca: str -> peca
+# cria_copia_peca: peca -> peca
+# eh_peca: universal -> booleano
+# pecas_iguais: peca x peca -> booleano
+# peca_para_str: peca -> str
+# peca_para_inteiro: peca -> N
+
+
 def cria_peca(s):
     #cria_peca: str -> peca
     '''Recebe uma cadeia de carateres correspondente ao identificador
@@ -179,6 +204,27 @@ def inteiro_para_peca(num):
         return cria_peca(' ')
     elif num == 1:
         return cria_peca('X')
+
+
+#TAD tabuleiro
+#A representacao interna da TAD tabuleiro e uma lista com tres sublistas.
+#Cada uma dessas sublistas tem 3 inteiros (-1,0 ou 1), correspondentes a uma
+#determinada peca/jogador
+# cria_tabuleiro: {} -> tabuleiro
+# cria_copia_tabuleiro: tabuleiro -> tabuleiro
+# obter_peca: tabuleiro x posicao -> peca
+# obter_vetor: tabuleiro x str -> tuplo de pecas
+# coloca_peca: tabuleiro x peca x posicao -> tabuleiro
+# remove_peca: tabuleiro x posicao -> tabuleiro
+# move_peca: tabuleiro x posicao x posicao -> tabuleiro
+# eh_tabuleiro: universal -> booleano
+# tabuleiros_iguais: tabuleiro x tabuleiro -> booleano
+# eh_posicao_livre: tabuleiro x posicao -> booleano
+# tabuleiro_para_str: tabuleiro -> str
+# tuplo_para_tabuleiro: tuplo -> tabuleiro
+# obter_ganhador: tabuleiro -> peca
+# obter_posicoes_livres: tabuleiro -> tuplo de posicoes
+# obter_posicoes_jogador: tabuleiro x peca -> tuplo de posicoes
 
 
 def cria_tabuleiro():
