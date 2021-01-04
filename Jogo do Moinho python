@@ -377,7 +377,8 @@ def peca_por_posicao(t):
     #peca_por_posicao: tabuleiro -> tuplo
     '''Recebe um tabuleiro e devolve um tuplo com as pecas,
     ordenadas por posicao'''
-    return tuple(inteiro_para_peca(entrada) for linha in t for entrada in linha)
+    tab = [obter_vetor(t, str(x)) for x in range(1,4)]
+    return [y for tuplo in tab for y in tuplo]
 
 
 def tabuleiro_para_str(t):
@@ -568,7 +569,7 @@ def vitoria_colunas(t, j):
 
         if len([x for x in coluna if pecas_iguais(x, j)]) == 2 and \
         len([y for y in coluna if pecas_iguais(y, cria_peca(' '))]) == 1:
-        
+
             c = [peca_para_inteiro(x) for x in coluna]
             return counter + 3 * (c.index(peca_para_inteiro(cria_peca(' '))))
         counter = counter + 1
