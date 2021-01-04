@@ -565,8 +565,12 @@ def vitoria_colunas(t, j):
     colunas = [obter_vetor(t, x) for x in ('a','b','c')]
     counter = 1
     for coluna in colunas:
-        if coluna.count(j) == 2 and coluna.count(cria_peca(' ')) == 1:
-            return counter + 3 * (coluna.index(cria_peca(' ')))
+
+        if len([x for x in coluna if pecas_iguais(x, j)]) == 2 and \
+        len([y for y in coluna if pecas_iguais(y, cria_peca(' '))]) == 1:
+        
+            c = [peca_para_inteiro(x) for x in coluna]
+            return counter + 3 * (c.index(peca_para_inteiro(cria_peca(' '))))
         counter = counter + 1
     return False
 
@@ -580,8 +584,12 @@ def vitoria_linhas(t, j):
     linhas = [obter_vetor(t, str(x)) for x in range(1,4)]
     posicao = 1
     for linha in linhas:
-        if linha.count(j) == 2 and linha.count(cria_peca(' ')) == 1:
-            return posicao + linha.index(cria_peca(' '))
+
+        if len([x for x in linha if pecas_iguais(x, j)]) == 2 and \
+        len([y for y in linha if pecas_iguais(y, cria_peca(' '))]) == 1:
+
+            l = [peca_para_inteiro(x) for x in linha]
+            return posicao + l.index(peca_para_inteiro(cria_peca(' ')))
         posicao = posicao + 3
     return False
 
